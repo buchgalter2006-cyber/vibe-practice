@@ -85,14 +85,9 @@ class ExcelSource(MockSource):
         return MockSource.rows_count(self) + len(fact)
 
     # ------------------------------------------------------------------ API --
-    def fetch(self, period):
-        """Факт из ведомости подменяет факт датасета — дальше всё считает MockSource.
-
-        Подмена происходит до секций, поэтому маркетинг, базис метрик и всё
-        остальное остаются согласованными между собой.
-        """
-        if period not in ("all", "q3", "sep"):
-            raise SourceError(u"неизвестный период: %s" % period)
+    def _merged_dataset(self):
+        """Датасет с фактом, подменённым из ведомости. Точка расширения:
+        наследники (google_sheets) дополнительно подменяют план до отдачи."""
         fact, months_xlsx = self._workbook_rows()
         d = self._dataset()
         channels = d.get("marketing", {}).get("channels", [])
@@ -111,7 +106,6 @@ class ExcelSource(MockSource):
             raise SourceError(u"месяцы ведомости (%s) не совпадают с датасетом (%s)"
                               % (u", ".join(months_xlsx), u", ".join(d.get("months", []))))
 
-        # работаем на копии данных: подменяем факт каждого канала
         merged = dict(d)
         merged_channels = []
         for ch in channels:
@@ -119,7 +113,13 @@ class ExcelSource(MockSource):
             ch_copy["fact"] = list(fact[ch.get("channel", "")])
             merged_channels.append(ch_copy)
         merged["marketing"] = {"channels": merged_channels}
-        return self._render(merged, period)
+        return merged
+
+    def fetch(self, period):
+        """Факт из ведомости подменяет факт датасета — дальше всё считает MockSource."""
+        if period not in ("all", "q3", "sep"):
+            raise SourceError(u"неизвестный период: %s" % period)
+        return self._render(self._merged_dataset(), period)
 
     def _render(self, merged, period):
         """Считает fetch() от объединённого датасета: _dataset() временно

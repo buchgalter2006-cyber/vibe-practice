@@ -89,14 +89,16 @@ def get_source(name: Optional[str] = None) -> DataSource:
     if key == "excel_file":
         from .excel_source import ExcelSource
         return ExcelSource()
+    if key == "google_sheets":
+        from .google_source import GoogleSheetsSource
+        return GoogleSheetsSource()
     stubs = {
-        "google_sheets": GoogleSheetsSource,
         "fintablo_api": FintabloApiSource,
         "bitrix_webhook": BitrixWebhookSource,
     }
     if key in stubs:
         return stubs[key]()
-    raise SourceError(u"неизвестный DATA_SOURCE: %s (доступно: mock, excel_file)" % key)
+    raise SourceError(u"неизвестный DATA_SOURCE: %s (доступно: mock, excel_file, google_sheets)" % key)
 
 
 def available_sources() -> List[Dict[str, Any]]:
@@ -104,7 +106,7 @@ def available_sources() -> List[Dict[str, Any]]:
     return [
         {"name": "mock", "title": u"Тестовый датасет (mock)", "ready": True},
         {"name": "excel_file", "title": u"Excel-файл (факт маркетинга)", "ready": True},
-        {"name": "google_sheets", "title": u"Google Sheets", "ready": False},
+        {"name": "google_sheets", "title": u"Google Sheets (план маркетинга)", "ready": True},
         {"name": "fintablo_api", "title": u"FinTablo API", "ready": False},
         {"name": "bitrix_webhook", "title": u"Битрикс24 (вебхук)", "ready": False},
     ]
