@@ -80,6 +80,13 @@ class ExcelSource(MockSource):
             self._xlsx_key = key
         return self._xlsx_cache, self._xlsx_header_cache
 
+    def reload(self) -> None:
+        """Сбросить кэш ведомости (после загрузки нового файла через интерфейс).
+        Кэш и так ключуется по mtime — это принудительный сброс «на всякий случай»."""
+        self._xlsx_cache = None
+        self._xlsx_header_cache = None
+        self._xlsx_key = None
+
     def rows_count(self) -> int:
         fact, _ = self._workbook_rows()
         return MockSource.rows_count(self) + len(fact)

@@ -17,9 +17,16 @@
       <a href="#marketing" data-tab="marketing"><span class="i">◎</span>Маркетинг</a>
       <a href="#sales" data-tab="sales"><span class="i">◔</span>Продажи</a>
       <a href="#metrics" data-tab="metrics"><span class="i">◈</span>Метрики</a>
-      <div class="sep">Система</div>
-      <a href="#settings" data-tab="settings" class="off"><span class="i">⚙</span>Настройки</a>
+      <div class="sep" id="nav-sep">Система</div>
+      <a href="#settings" data-tab="settings" class="off" id="nav-settings"><span class="i">⚙</span>Настройки</a>
     </nav>
+    <div class="userbox" id="userbox" hidden>
+      <div class="u-line">Вы вошли как <b id="u-name"></b> <span class="u-role" id="u-role"></span></div>
+      <div class="u-actions">
+        <button class="btn btn-sm ghost" id="pass-btn" title="Сменить свой пароль">Пароль</button>
+        <button class="btn btn-sm ghost" id="logout-btn">Выйти</button>
+      </div>
+    </div>
     <div class="foot">Каркас · Ф3<br>Источники: Google-таблица · Excel · FinTablo · Битрикс24<br><span class="muted">(подключаются в Ф4)</span></div>
   </aside>
 

@@ -15,12 +15,19 @@ python3 scripts/gen_test_data.py      # перегенерировать тес�
 open mockup/index.html                # макет фазы 2 (эталон дизайна)
 ```
 
+## Доступы (Ф5)
+
+- Роли: **admin** (всё + управление пользователями), **editor** (+ загрузка ведомости, настройки), **view** (только дашборды).
+- При первом старте, если таблица `users` пуста, создаётся администратор `admin` с паролем из `.env` (`ADMIN_PASSWORD`). **Этот пароль — стартовый: смените его через «Настройки → Пользователи» (или кнопкой «Пароль» в сайдбаре).**
+- Пароли хранятся только в виде хэшей (werkzeug pbkdf2); `SESSION_SECRET` — ключ сессий Flask.
+- Ведомость факта маркетинга загружается на вкладке «Настройки» (drag-and-drop, `.xlsx`, лист «Факт маркетинга»); журнал попыток — там же.
+
 ## Структура
 
 | Путь | Что внутри |
 |---|---|
-| `app/server.py` | Flask: JSON API (`/api/meta`, `/api/overview`, `/api/marketing`, `/api/sales`, `/api/metrics`, `GET/PUT /api/settings`) + раздача статики |
-| `app/db.py` | SQLite `data/app.db`: `settings`, `norms`, `import_log`; нормативы засеиваются из датасета |
+| `app/server.py` | Flask: JSON API (`/api/meta`, `/api/overview`, `/api/marketing`, `/api/sales`, `/api/metrics`, `GET/PUT /api/settings`, загрузка ведомости `/api/upload/fact_marketing`, `/api/imports`, `/api/users`) + раздача статики |
+| `app/db.py` | SQLite `data/app.db`: `settings`, `norms`, `import_log`, `users`; нормативы засеиваются из датасета |
 | `app/services/` | `sources.py` — интерфейс источников и заглушки (Google Sheets, Excel, FinTablo, Битрикс24 — фаза 4); `mock_source.py` — рабочий источник на тестовых данных |
 | `app/static/` | фронтенд: `index.html`, `styles.css`, `app.js` (перенос макета, данные через fetch) |
 | `mockup/` | макет фазы 2 — **эталон дизайна, не менять** |
@@ -33,9 +40,9 @@ open mockup/index.html                # макет фазы 2 (эталон ди
 
 - ✅ **Ф2** — макет: 4 вкладки, фильтр периода, тестовые данные
 - ✅ **Ф3** — каркас: Flask API + SQLite + перенос макета 1:1 (вид проверен скриншотами), первый коммит
-- ⏭ **Ф4** — данные: Google-таблица (план), Excel (факт), FinTablo API, Битрикс24 вебхук — с проверкой цифр
-- ⏭ **Ф5** — сервис: авторизация с ролями, загрузка Excel
-- ⏭ **Ф6** — деплой на Amvera (тогда же проверить, переживёт ли SQLite редеплой — при необходимости перейти на Postgres)
+- ✅ **Ф4** — данные: Google-таблица (план), Excel (факт), FinTablo API, Битрикс24 вебхук — с проверкой цифр
+- ✅ **Ф5** — сервис: авторизация с ролями (admin/editor/view), загрузка Excel-ведомости через интерфейс, журнал импортов
+- ⏭ **Ф6** — деплой
 
 ## Конвенции
 

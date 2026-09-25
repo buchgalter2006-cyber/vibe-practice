@@ -4,6 +4,11 @@ const PERIOD_LABELS = { all: "Янв – Сен 2026", q3: "Q3 2026", sep: "Се
 let period = "all";
 let META = null;
 let current = "overview";
+/* Ф5: текущий пользователь (из /api/whoami) и роли */
+const ROLE_LEVEL = { view: 1, editor: 2, admin: 3 };
+const ROLE_LABEL = { admin: "админ", editor: "редактор", view: "просмотр" };
+let ME = { user: null, role: null };
+const roleAtLeast = r => !!ME.user && (ROLE_LEVEL[ME.role] || 0) >= ROLE_LEVEL[r];
 const state = { overview: null, marketing: null, sales: null, metrics: null, settings: null };
 const tokens = {};
 
@@ -284,6 +289,37 @@ function renderSettings(M) {
         <button class="btn" id="save-settings">Сохранить</button>
         <span class="status" id="set-status"></span>
       </div>
+    </div></div>
+
+  <div class="card" style="margin-top:16px"><h2>Загрузка ведомости факта</h2>
+    <div class="hint">Excel (.xlsx), лист «Факт маркетинга», шапка в строке 2 — после загрузки факт обновится на вкладке «Маркетинг»</div>
+    <div class="pad">
+      <div class="dropzone" id="dropzone" tabindex="0">
+        <input type="file" id="file-input" accept=".xlsx" hidden>
+        <b>Перетащите файл сюда</b> или <span class="linklike">выберите на диске</span>
+        <div class="muted" style="font-size:11.5px;margin-top:6px">файл проходит валидацию: месяцы, каналы, контрольная сверка с текущим фактом</div>
+      </div>
+      <div class="status imp-status" id="upload-status"></div>
+    </div></div>
+
+  <div class="card" style="margin-top:16px"><h2>Журнал импортов</h2>
+    <div class="hint">последние 20 загрузок — включая неудачные попытки</div>
+    <div class="pad" id="imports-box"><div class="muted">Загрузка…</div></div></div>
+
+  <div class="card" style="margin-top:16px" id="users-card" hidden><h2>Пользователи</h2>
+    <div class="hint">создание, удаление и смена паролей — только для администратора</div>
+    <div class="pad" id="users-box"><div class="muted">Загрузка…</div></div>
+    <div class="pad users-form" id="users-form">
+      <div class="field"><label>Логин</label><input id="nu-name" type="text" spellcheck="false"></div>
+      <div class="field"><label>Пароль (от 8 символов)</label><input id="nu-pass" type="password"></div>
+      <div class="field"><label>Роль</label>
+        <select id="nu-role" class="role">
+          <option value="view">просмотр</option>
+          <option value="editor" selected>редактор</option>
+          <option value="admin">админ</option>
+        </select></div>
+      <div class="actions" style="margin-top:0"><button class="btn" id="nu-create">Создать</button>
+        <span class="status" id="users-status"></span></div>
     </div></div>`;
 
   const status = document.getElementById("set-status");
@@ -292,6 +328,13 @@ function renderSettings(M) {
     status.className = "status"; status.textContent = "";
   }));
   document.getElementById("save-settings").addEventListener("click", saveSettings);
+  wireUpload();
+  loadImports();
+  if (ME.role === "admin") {
+    document.getElementById("users-card").hidden = false;
+    wireUsers();
+    loadUsers();
+  }
 }
 
 async function saveSettings() {
@@ -341,7 +384,176 @@ async function saveSettings() {
   }
 }
 
-/* ---------- сеть: загрузка данных из API ---------- */
+/* ---------- Ф5: загрузка ведомости, журнал импортов, пользователи ---------- */
+function wireUpload() {
+  const zone = document.getElementById("dropzone");
+  const input = document.getElementById("file-input");
+  if (!zone || !input) return;
+  zone.addEventListener("click", () => input.click());
+  zone.addEventListener("dragover", ev => { ev.preventDefault(); zone.classList.add("drag"); });
+  zone.addEventListener("dragleave", () => zone.classList.remove("drag"));
+  zone.addEventListener("drop", ev => {
+    ev.preventDefault();
+    zone.classList.remove("drag");
+    if (ev.dataTransfer.files && ev.dataTransfer.files.length) uploadFact(ev.dataTransfer.files[0]);
+  });
+  input.addEventListener("change", () => {
+    if (input.files && input.files.length) uploadFact(input.files[0]);
+    input.value = "";                       // повторная загрузка того же файла
+  });
+}
+
+async function uploadFact(file) {
+  const st = document.getElementById("upload-status");
+  if (!/\.xlsx$/i.test(file.name)) {
+    st.className = "status err";
+    st.textContent = "Нужен файл Excel (.xlsx): «" + file.name + "» не подходит";
+    return;
+  }
+  st.className = "status";
+  st.textContent = "Загрузка и проверка «" + file.name + "»…";
+  const fd = new FormData();
+  fd.append("file", file);
+  try {
+    const res = await api("/api/upload/fact_marketing", { method: "POST", body: fd });
+    st.className = "status ok";
+    st.textContent = "Загружено: " + res.file + " · каналов: " + res.rows + " · сумма факта " + fmtM(res.total);
+    state.marketing = null;                 // вкладка «Маркетинг» перечитает данные при показе
+    state.overview = null;
+    state.metrics = null;
+    setStatus("Ведомость загружена: " + res.file, false);
+    loadImports();
+  } catch (err) {
+    st.className = "status err";
+    st.textContent = "Не загружено: " + err.message;
+  }
+}
+
+async function loadImports() {
+  const box = document.getElementById("imports-box");
+  if (!box) return;
+  try {
+    const res = await api("/api/imports");
+    const rows = res.imports || [];
+    if (!rows.length) { box.innerHTML = '<div class="muted">Импортов пока не было</div>'; return; }
+    box.innerHTML = `<table>
+      <thead><tr><th>Время</th><th>Источник</th><th class="r">Строк</th><th>Статус</th><th>Сообщение</th></tr></thead>
+      <tbody>${rows.map(r => `<tr>
+        <td class="num">${esc(String(r.started_at).replace("T", " "))}</td>
+        <td>${esc(r.source)}</td>
+        <td class="r num">${r.rows_imported}</td>
+        <td><span class="pill ${r.status === "ok" ? "ok" : "err"}">${r.status === "ok" ? "ок" : "ошибка"}</span></td>
+        <td>${esc(r.message || "")}</td></tr>`).join("")}</tbody></table>`;
+  } catch (err) {
+    box.innerHTML = '<div class="muted">Не удалось загрузить журнал: ' + esc(err.message) + '</div>';
+  }
+}
+
+function wireUsers() {
+  const st = document.getElementById("users-status");
+  document.getElementById("nu-create").addEventListener("click", async () => {
+    st.className = "status"; st.textContent = "";
+    const btn = document.getElementById("nu-create");
+    btn.disabled = true;
+    try {
+      await api("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: document.getElementById("nu-name").value.trim(),
+          password: document.getElementById("nu-pass").value,
+          role: document.getElementById("nu-role").value,
+        }),
+      });
+      st.className = "status ok";
+      st.textContent = "Пользователь создан";
+      document.getElementById("nu-name").value = "";
+      document.getElementById("nu-pass").value = "";
+      loadUsers();
+    } catch (err) {
+      st.className = "status err";
+      st.textContent = err.status === 401 ? "Требуется вход" : err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
+async function loadUsers() {
+  const box = document.getElementById("users-box");
+  if (!box) return;
+  try {
+    const res = await api("/api/users");
+    box.innerHTML = `<table>
+      <thead><tr><th>Логин</th><th>Роль</th><th>Создан</th><th></th></tr></thead>
+      <tbody>${res.users.map(u => `<tr>
+        <td><b>${esc(u.username)}</b>${u.username === ME.user ? ' <span class="muted">(вы)</span>' : ""}</td>
+        <td>${ROLE_LABEL[u.role] || esc(u.role)}</td>
+        <td class="muted">${esc(String(u.created_at || "").replace("T", " "))}</td>
+        <td class="users-actions">
+          <button class="btn btn-sm secondary" data-pass="${esc(u.username)}">Сменить пароль</button>
+          <button class="btn btn-sm danger" data-del="${esc(u.username)}">Удалить</button>
+        </td></tr>`).join("")}</tbody></table>`;
+    box.querySelectorAll("button[data-pass]").forEach(b => b.addEventListener("click", () => changePassword(b.dataset.pass)));
+    box.querySelectorAll("button[data-del]").forEach(b => b.addEventListener("click", () => deleteUser(b.dataset.del)));
+  } catch (err) {
+    box.innerHTML = '<div class="muted">Не удалось загрузить список: ' + esc(err.message) + '</div>';
+  }
+}
+
+async function changePassword(username) {
+  const pwd = prompt("Новый пароль для «" + username + "» (от 8 символов):");
+  if (pwd === null) return;
+  if (pwd.length < 8) { alert("Пароль должен быть не короче 8 символов"); return; }
+  try {
+    await api("/api/users/" + encodeURIComponent(username) + "/password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: pwd }),
+    });
+    setStatus("Пароль обновлён: " + username, false);
+    if (document.getElementById("users-box")) loadUsers();
+  } catch (err) {
+    alert("Не удалось сменить пароль: " + err.message);
+  }
+}
+
+async function deleteUser(username) {
+  if (!confirm("Удалить пользователя «" + username + "»?")) return;
+  try {
+    await api("/api/users/" + encodeURIComponent(username), { method: "DELETE" });
+    setStatus("Пользователь удалён: " + username, false);
+    loadUsers();
+  } catch (err) {
+    alert("Не удалось удалить: " + err.message);
+  }
+}
+
+/* ---------- Ф5: блок пользователя в сайдбаре ---------- */
+function applyUserUI() {
+  const box = document.getElementById("userbox");
+  const settingsLink = document.getElementById("nav-settings");
+  if (ME.user) {
+    box.hidden = false;
+    document.getElementById("u-name").textContent = ME.user;
+    document.getElementById("u-role").textContent = ROLE_LABEL[ME.role] || ME.role;
+  } else {
+    box.hidden = true;
+  }
+  /* «Настройки» — только editor/admin; view и не вошедшие их не видят */
+  const canSettings = roleAtLeast("editor");
+  settingsLink.hidden = !canSettings;
+  const sep = document.getElementById("nav-sep");
+  if (sep) sep.hidden = !canSettings;
+  if (!canSettings && current === "settings") current = "overview";
+  document.getElementById("logout-btn").addEventListener("click", async () => {
+    await fetch("/logout", { method: "POST" });
+    location.replace("/login");
+  });
+  document.getElementById("pass-btn").addEventListener("click", () => changePassword(ME.user));
+}
+
+
 async function api(path, options) {
   let res;
   try {
@@ -351,7 +563,16 @@ async function api(path, options) {
   }
   let body = null;
   try { body = await res.json(); } catch (e) { body = null; }
-  if (!res.ok) throw new Error((body && body.error) || ("HTTP " + res.status));
+  if (!res.ok) {
+    const err = new Error((body && body.error) || ("HTTP " + res.status));
+    err.status = res.status;
+    /* Ф5: сессия истекла / не выполнен вход — страница логина */
+    if (res.status === 401 && !(options && options.noRedirect)) {
+      setStatus("Требуется вход", true);
+      setTimeout(() => location.replace("/login"), 300);
+    }
+    throw err;
+  }
   return body;
 }
 
@@ -437,6 +658,14 @@ window.addEventListener("hashchange", () => show(location.hash.slice(1)));
 
 async function boot() {
   setStatus("Загрузка…", false);
+  /* Ф5: кто вошёл — от этого зависят видимость «Настроек» и блок пользователя */
+  try {
+    const r = await fetch("/api/whoami");
+    ME = await r.json();
+  } catch (e) {
+    ME = { user: null, role: null };
+  }
+  applyUserUI();
   try {
     META = await api("/api/meta");
   } catch (err) {

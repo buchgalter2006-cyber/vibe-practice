@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Вход · Сервис отчётности «Вектор»</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="login-page">
+  <div class="login-card">
+    <div class="brand">
+      <div class="dot"></div>
+      <div><b>Вектор</b><span>сервис отчётности</span></div>
+    </div>
+    <h1>Вход</h1>
+    <form id="login-form" method="post" action="/login" autocomplete="off">
+      <div class="field">
+        <label for="username">Логин</label>
+        <input id="username" name="username" type="text" required autofocus spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="password">Пароль</label>
+        <input id="password" name="password" type="password" required>
+      </div>
+      <div class="login-error" id="login-error" hidden></div>
+      <div class="actions">
+        <button class="btn" type="submit" id="login-btn">Войти</button>
+      </div>
+    </form>
+    <div class="login-hint">Доступы выдаёт администратор. Пароль администратора задаётся при первом запуске (переменная ADMIN_PASSWORD) и меняется в «Настройках».</div>
+  </div>
+<script>
+document.getElementById("login-form").addEventListener("submit", async function (ev) {
+  ev.preventDefault();
+  const btn = document.getElementById("login-btn");
+  const err = document.getElementById("login-error");
+  err.hidden = true;
+  btn.disabled = true;
+  try {
+    const res = await fetch("/login", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        username: document.getElementById("username").value.trim(),
+        password: document.getElementById("password").value,
+      }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (res.ok) { location.replace("/#overview"); return; }
+    err.textContent = body.error || ("Ошибка входа (HTTP " + res.status + ")");
+  } catch (e) {
+    err.textContent = "Сервер недоступен — запустите .venv/bin/python app/server.py";
+  } finally {
+    btn.disabled = false;
+    err.hidden = !err.textContent;
+  }
+});
+</script>
+</body>
+</html>

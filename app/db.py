@@ -31,6 +31,10 @@ CREATE TABLE IF NOT EXISTS import_log (
   id INTEGER PRIMARY KEY AUTOINCREMENT, source TEXT, started_at TEXT, finished_at TEXT,
   rows_imported INTEGER, status TEXT, message TEXT
 );
+CREATE TABLE IF NOT EXISTS users (
+  username TEXT PRIMARY KEY, password_hash TEXT NOT NULL, role TEXT NOT NULL,
+  created_at TEXT
+);
 """
 
 
@@ -191,6 +195,85 @@ def save_norms(values: Dict[str, float], path: Optional[str] = None) -> Dict[str
     finally:
         conn.close()
     return get_norms(path)
+
+
+# --------------------------------------------------------------------------- #
+# пользователи и роли (Ф5)
+# --------------------------------------------------------------------------- #
+ROLES = ("admin", "editor", "view")
+
+
+def count_users(path: Optional[str] = None) -> int:
+    conn = connect(path)
+    try:
+        return int(conn.execute("SELECT COUNT(*) AS c FROM users").fetchone()["c"])
+    finally:
+        conn.close()
+
+
+def count_role(role: str, path: Optional[str] = None) -> int:
+    conn = connect(path)
+    try:
+        return int(conn.execute(
+            "SELECT COUNT(*) AS c FROM users WHERE role = ?", (role,)).fetchone()["c"])
+    finally:
+        conn.close()
+
+
+def get_user(username: str, path: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    conn = connect(path)
+    try:
+        row = conn.execute(
+            "SELECT username, password_hash, role, created_at FROM users WHERE username = ?",
+            (username,),
+        ).fetchone()
+    finally:
+        conn.close()
+    return dict(row) if row else None
+
+
+def list_users(path: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Список пользователей без хэшей — для GET /api/users."""
+    conn = connect(path)
+    try:
+        rows = conn.execute(
+            "SELECT username, role, created_at FROM users ORDER BY created_at, username"
+        ).fetchall()
+    finally:
+        conn.close()
+    return [dict(r) for r in rows]
+
+
+def insert_user(username: str, password_hash: str, role: str,
+                path: Optional[str] = None) -> None:
+    conn = connect(path)
+    try:
+        conn.execute(
+            "INSERT INTO users (username, password_hash, role, created_at) VALUES (?, ?, ?, ?)",
+            (username, password_hash, role, now()),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def set_password(username: str, password_hash: str, path: Optional[str] = None) -> None:
+    conn = connect(path)
+    try:
+        conn.execute("UPDATE users SET password_hash = ? WHERE username = ?",
+                     (password_hash, username))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def delete_user(username: str, path: Optional[str] = None) -> None:
+    conn = connect(path)
+    try:
+        conn.execute("DELETE FROM users WHERE username = ?", (username,))
+        conn.commit()
+    finally:
+        conn.close()
 
 
 # --------------------------------------------------------------------------- #
