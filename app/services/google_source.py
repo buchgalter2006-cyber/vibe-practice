@@ -57,9 +57,8 @@ class GoogleSheetsSource(ExcelSource):
         if self._plan_cache is None or time.time() - self._plan_ts > PLAN_CACHE_TTL:
             try:
                 import gspread
-                gc = gspread.service_account(
-                    filename=os.path.expanduser(
-                        os.environ.get("GSPREAD_KEYFILE", "~/.gcp/cfo-sheets-bot.json")))
+                keyfile = self._resolve_keyfile()
+                gc = gspread.service_account(filename=keyfile)
                 sh = gc.open_by_key(self.sheet_id)
                 ws = sh.worksheet(self.sheet_name) if self.sheet_name else sh.sheet1
                 rows = ws.get_all_values()
@@ -89,6 +88,22 @@ class GoogleSheetsSource(ExcelSource):
             self._plan_cache = (plan, months)
             self._plan_ts = time.time()
         return self._plan_cache
+
+    def _resolve_keyfile(self) -> str:
+        """Файл ключа сервисного аккаунта: GSPREAD_KEYFILE, либо JSON из
+        переменной GSPREAD_KEY_JSON (для serverless без файловой системы),
+        либо дефолт ~/.gcp/cfo-sheets-bot.json."""
+        explicit = os.environ.get("GSPREAD_KEYFILE")
+        if explicit:
+            return os.path.expanduser(explicit)
+        raw = os.environ.get("GSPREAD_KEY_JSON")
+        if raw:
+            tmp = "/tmp/gspread_key.json"
+            if not os.path.exists(tmp):
+                with open(tmp, "w", encoding="utf-8") as f:
+                    f.write(raw)
+            return tmp
+        return os.path.expanduser("~/.gcp/cfo-sheets-bot.json")
 
     # ------------------------------------------------------------------ API --
     def _merged_dataset(self):
