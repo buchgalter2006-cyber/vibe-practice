@@ -252,6 +252,9 @@ def api_user_delete(username):
 # --------------------------------------------------------------------------- #
 @app.route("/")
 def index():
+    from flask import redirect
+    if not current_user():
+        return redirect("/login")
     return send_from_directory(app.static_folder, "index.html")
 
 
@@ -260,6 +263,7 @@ def index():
 # --------------------------------------------------------------------------- #
 @app.route("/api/meta")
 def api_meta():
+    _require_user()  # дашборды — только после входа (решение 25.09)
     d = data("all")
     meta = d["meta"]
     norms = db.get_norms()
@@ -290,6 +294,7 @@ def api_meta():
 
 @app.route("/api/overview")
 def api_overview():
+    _require_user()  # дашборды — только после входа
     period = parse_period()
     d = data(period)
     dds = d["dds"]
@@ -317,6 +322,7 @@ def api_overview():
 
 @app.route("/api/marketing")
 def api_marketing():
+    _require_user()  # дашборды — только после входа
     period = parse_period()
     d = data(period)
     mkt = d["marketing"]
@@ -340,6 +346,7 @@ def api_marketing():
 
 @app.route("/api/sales")
 def api_sales():
+    _require_user()  # дашборды — только после входа
     # период к CRM-данным в датасете не применяется (нет разбивки сделок по месяцам)
     d = data("all")
     sales = d["sales"]
@@ -404,6 +411,7 @@ def build_metrics(period: str, d: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 @app.route("/api/metrics")
 def api_metrics():
+    _require_user()  # дашборды — только после входа
     period = parse_period()
     d = data(period)
     meta = d["meta"]
