@@ -51,13 +51,13 @@ class GoogleSheetsSource(DataSource):
 
 
 class ExcelFileSource(DataSource):
-    """Факт маркетинга из Excel-ведомости."""
+    """Факт маркетинга из Excel-ведомости — реализован, см. excel_source.py."""
     name = "excel_file"
-    title = u"Excel-файл"
+    title = u"Excel-файл (факт маркетинга)"
 
     def fetch(self, period: str) -> Dict[str, Any]:
-        # TODO Ф4: чтение .xlsx по EXCEL_PATH (openpyxl), сверка с планом
-        raise NotImplementedError("excel_file: подключение в Ф4")
+        from .excel_source import ExcelSource  # локальный импорт: нет цикла
+        return ExcelSource().fetch(period)
 
 
 class FintabloApiSource(DataSource):
@@ -86,23 +86,25 @@ def get_source(name: Optional[str] = None) -> DataSource:
     if key == "mock":
         from .mock_source import MockSource  # локальный импорт: нет циклической зависимости
         return MockSource()
+    if key == "excel_file":
+        from .excel_source import ExcelSource
+        return ExcelSource()
     stubs = {
         "google_sheets": GoogleSheetsSource,
-        "excel_file": ExcelFileSource,
         "fintablo_api": FintabloApiSource,
         "bitrix_webhook": BitrixWebhookSource,
     }
     if key in stubs:
         return stubs[key]()
-    raise SourceError(u"неизвестный DATA_SOURCE: %s (доступно: mock)" % key)
+    raise SourceError(u"неизвестный DATA_SOURCE: %s (доступно: mock, excel_file)" % key)
 
 
 def available_sources() -> List[Dict[str, Any]]:
     """Список источников для интерфейса: что уже работает, а что — Ф4."""
     return [
         {"name": "mock", "title": u"Тестовый датасет (mock)", "ready": True},
+        {"name": "excel_file", "title": u"Excel-файл (факт маркетинга)", "ready": True},
         {"name": "google_sheets", "title": u"Google Sheets", "ready": False},
-        {"name": "excel_file", "title": u"Excel-файл", "ready": False},
         {"name": "fintablo_api", "title": u"FinTablo API", "ready": False},
         {"name": "bitrix_webhook", "title": u"Битрикс24 (вебхук)", "ready": False},
     ]
