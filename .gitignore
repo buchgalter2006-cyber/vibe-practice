@@ -1,0 +1,12 @@
+# окружение и кэш
+.venv/
+__pycache__/
+*.py[cod]
+
+# секреты и локальная БД (создаётся автоматически)
+.env
+data/*.db
+data/*.db-journal
+
+# мусор macOS
+.DS_Store

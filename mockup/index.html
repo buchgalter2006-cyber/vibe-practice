@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Дашборд — Макет · Тестовые данные</title>
+<style>
+  :root{
+    --bg:#f4f5f7; --card:#fff; --ink:#12141a; --muted:#6b7280; --line:#e6e8ec;
+    --accent:#3f5bd9; --good:#0f9d58; --bad:#d93025; --sidebar:#101521;
+    --shadow:0 1px 2px rgba(16,21,33,.05), 0 6px 18px rgba(16,21,33,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+  .num{font-variant-numeric:tabular-nums}
+
+  .app{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+  /* ---------- sidebar ---------- */
+  aside{background:var(--sidebar);color:#c7cddb;padding:20px 14px;display:flex;flex-direction:column;gap:4px}
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 10px 18px}
+  .brand .dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#5b7cfa,#8f5bfa)}
+  .brand b{color:#fff;font-size:15px;font-weight:600;letter-spacing:.2px}
+  .brand span{display:block;font-size:11px;color:#7e879c;margin-top:2px}
+  .nav{display:flex;flex-direction:column;gap:2px}
+  .nav a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:#c7cddb;
+         text-decoration:none;font-weight:500}
+  .nav a .i{width:18px;text-align:center;opacity:.85}
+  .nav a:hover{background:rgba(255,255,255,.06);color:#fff}
+  .nav a.on{background:rgba(91,124,250,.16);color:#fff}
+  .nav a.on .i{opacity:1}
+  .nav .sep{margin:10px 12px 6px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5d667c}
+  aside .foot{margin-top:auto;padding:10px 12px;font-size:11px;color:#5d667c;line-height:1.5}
+
+  /* ---------- header ---------- */
+  main{padding:22px 26px 40px;max-width:1240px}
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px}
+  h1{font-size:21px;margin:0 0 3px;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:13px}
+  .badge{display:inline-block;font-size:11px;font-weight:600;color:#7a4bd6;background:#f3edff;
+         border:1px solid #e3d7ff;border-radius:999px;padding:3px 9px;margin-left:8px;vertical-align:2px}
+  .filters{display:flex;gap:8px;align-items:center}
+  select{font:inherit;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:9px;
+         padding:8px 11px;box-shadow:var(--shadow)}
+  select:disabled{color:#aeb4c0;background:#fafbfc}
+
+  /* ---------- cards ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+  .kpi{padding:15px 16px}
+  .kpi .t{color:var(--muted);font-size:12.5px;display:flex;justify-content:space-between;gap:8px}
+  .kpi .v{font-size:23px;font-weight:650;letter-spacing:-.4px;margin-top:7px}
+  .kpi .d{font-size:12px;margin-top:6px;color:var(--muted)}
+  .up{color:var(--good);font-weight:600}
+  .down{color:var(--bad);font-weight:600}
+  .warn{color:#b25e09;font-weight:600}
+
+  .grid2{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-bottom:16px}
+  .card h2{font-size:14.5px;margin:0;padding:14px 16px 0;font-weight:600}
+  .card .hint{color:var(--muted);font-size:12px;padding:3px 16px 0}
+  .pad{padding:12px 16px 16px}
+
+  /* ---------- table ---------- */
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{color:var(--muted);font-weight:500;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);
+     font-size:12.5px;white-space:nowrap}
+  td{padding:8px 10px;border-bottom:1px solid #f0f1f4;white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  td.r,th.r{text-align:right}
+  tfoot td{font-weight:650;border-top:1px solid var(--line)}
+  .pill{display:inline-block;font-size:12px;font-weight:600;border-radius:7px;padding:1px 7px}
+  .pill.in{color:#0b7a43;background:#e7f6ee}
+  .pill.out{color:#8a2c25;background:#fdeceb}
+
+  /* ---------- bars & funnel ---------- */
+  .bars{display:flex;flex-direction:column;gap:9px}
+  .bar{display:grid;grid-template-columns:132px 1fr 108px;align-items:center;gap:10px;font-size:13px}
+  .bar .track{height:20px;background:#f1f2f5;border-radius:6px;overflow:hidden}
+  .bar .fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#5b7cfa,#7f5bfa)}
+  .bar .fill.g{background:linear-gradient(90deg,#12a150,#3fbf7f)}
+  .bar .val{text-align:right;color:var(--muted)}
+  .funnel .frow{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center}
+  .funnel .stage{font-size:13px}
+  .funnel .stage b{font-size:15px}
+  .funnel .track{height:30px;background:#f1f2f5;border-radius:8px;overflow:hidden}
+  .funnel .fill{height:100%;border-radius:8px;background:linear-gradient(90deg,#3f5bd9,#6f8bfa);
+                display:flex;align-items:center;justify-content:flex-end;padding-right:9px;color:#fff;font-weight:600;font-size:12.5px}
+  .conv{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;color:var(--muted);font-size:12.5px;padding:2px 0}
+  .conv .arrow{padding-left:14px}
+
+  /* ---------- metrics ---------- */
+  .mgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .mcard{padding:16px 18px}
+  .mcard .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .mcard .name{font-weight:600;font-size:15px}
+  .mcard .form{color:var(--muted);font-size:12px;margin-top:3px}
+  .mcard .big{font-size:27px;font-weight:680;letter-spacing:-.5px;margin-top:12px}
+  .mcard .norm{color:var(--muted);font-size:12.5px;margin-top:5px}
+  .dev{font-size:13px;font-weight:650;border-radius:9px;padding:4px 9px;white-space:nowrap}
+  .dev.ok{color:#0b7a43;background:#e7f6ee}
+  .dev.no{color:#8a2c25;background:#fdeceb}
+  .note{margin-top:14px;color:var(--muted);font-size:12.5px;background:#fff;border:1px dashed var(--line);
+        border-radius:12px;padding:11px 14px}
+  .muted{color:var(--muted)}
+  .right{text-align:right}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand">
+      <div class="dot"></div>
+      <div><b>Вектор</b><span>сервис отчётности</span></div>
+    </div>
+    <nav class="nav" id="nav">
+      <a href="#overview" data-tab="overview"><span class="i">▦</span>Обзор</a>
+      <a href="#marketing" data-tab="marketing"><span class="i">◎</span>Маркетинг</a>
+      <a href="#sales" data-tab="sales"><span class="i">◔</span>Продажи</a>
+      <a href="#metrics" data-tab="metrics"><span class="i">◈</span>Метрики</a>
+      <div class="sep">Система</div>
+      <a href="#settings" data-tab="settings" class="off"><span class="i">⚙</span>Настройки</a>
+    </nav>
+    <div class="foot">Макет · Ф2<br>Источники: Google-таблица · Excel · FinTablo · Битрикс24<br><span class="muted">(подключаются в Ф3–Ф4)</span></div>
+  </aside>
+
+  <main>
+    <header>
+      <div>
+        <h1 id="title">Обзор</h1>
+        <div class="sub" id="subtitle">Маркетинговая группа «Вектор» · данные: синтетика</div>
+      </div>
+      <div class="filters">
+        <select id="period">
+          <option value="all" selected>Янв – Сен 2026</option>
+          <option value="q3">Q3 2026</option>
+          <option value="sep">Сентябрь 2026</option>
+        </select>
+        <select disabled title="Появится в каркасе (Ф3)"><option>Все направления</option></select>
+      </div>
+    </header>
+
+    <section id="pane-overview"></section>
+    <section id="pane-marketing" hidden></section>
+    <section id="pane-sales" hidden></section>
+    <section id="pane-metrics" hidden></section>
+  </main>
+</div>
+
+<script src="data.js"></script>
+<script>
+const M = window.MOCK;
+const PERIODS = { all: [0,1,2,3,4,5,6,7,8], q3: [6,7,8], sep: [8] };
+let period = "all";
+
+const fmtM = v => {
+  const a = Math.abs(v);
+  if (a >= 1e6) return (v/1e6).toFixed(1).replace(".", ",") + " млн ₽";
+  if (a >= 1e3) return Math.round(v/1e3).toLocaleString("ru-RU") + " тыс ₽";
+  return Math.round(v).toLocaleString("ru-RU") + " ₽";
+};
+const fmtN = v => Math.round(v).toLocaleString("ru-RU");
+const pct = (a, b) => Math.round((a/b - 1) * 1000) / 10;
+const fmtPct = d => (d > 0 ? "+" : "") + String(d).replace(".", ",") + "%";
+const num1 = v => v.toFixed(1).replace(".", ",");
+const sum = a => a.reduce((x, y) => x + y, 0);
+const pick = (arr, idx) => idx.map(i => arr[i]);
+const isPartial = idx => idx.includes(8);
+const partialNote = idx => isPartial(idx)
+  ? '<span class="warn">сен — неполный месяц (23 из 30 дней)</span>' : "";
+
+/* ---------- SVG: линия ---------- */
+function lineChart(series, labels) {
+  const W = 720, H = 250, L = 66, R = 16, T = 14, B = 34;
+  const max = Math.max(...series.flatMap(s => s.values)) * 1.12;
+  const n = labels.length;
+  const x = i => L + (n === 1 ? (W-L-R)/2 : i * (W-L-R) / (n-1));
+  const y = v => T + (H-T-B) * (1 - v/max);
+  const grid = [0, .5, 1].map(k => {
+    const v = max * k, yy = y(v);
+    return `<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#eef0f3"/>
+            <text x="${L-9}" y="${yy+4}" text-anchor="end" font-size="11" fill="#9aa1ae">${(v/1e6).toFixed(0)} млн</text>`;
+  }).join("");
+  const paths = series.map(s => {
+    const d = s.values.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+    const dots = s.values.map((v, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.4" fill="#fff" stroke="${s.color}" stroke-width="2"/>`).join("");
+    return `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2.2" stroke-linejoin="round"/>${dots}`;
+  }).join("");
+  // подписи последних значений: если точки близко — разнести вверх/вниз
+  const lastX = x(n - 1);
+  const lastVals = series.map(s => ({v: s.values[s.values.length - 1], color: s.color,
+    yy: y(s.values[s.values.length - 1])}));
+  const close = lastVals.length === 2 && Math.abs(lastVals[0].yy - lastVals[1].yy) < 26;
+  const lbl = lastVals.map((p, i) => {
+    const dy = close ? (i === 0 ? -12 : 22) : -11;
+    return `<text x="${lastX - (close ? 4 : 0)}" y="${p.yy + dy}" text-anchor="end" font-size="11.5" font-weight="600" fill="${p.color}" stroke="#fff" stroke-width="3" paint-order="stroke">${fmtM(p.v)}</text>`;
+  }).join("");
+  const xs = labels.map((t, i) => `<text x="${x(i)}" y="${H-12}" text-anchor="middle" font-size="11.5" fill="#7b8290">${t}</text>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img">${grid}${paths}${lbl}${xs}</svg>`;
+}
+
+/* ---------- SVG: сгруппированные бары ---------- */
+function groupBars(plan, fact, labels) {
+  const W = 720, H = 235, L = 66, R = 16, T = 12, B = 34;
+  const max = Math.max(...plan, ...fact) * 1.15;
+  const n = labels.length, slot = (W - L - R) / Math.max(n, 1);
+  const bw = Math.min(20, slot / 3);
+  const y = v => T + (H-T-B) * (1 - v/max);
+  const grid = [0, .5, 1].map(k => {
+    const v = max * k, yy = y(v);
+    return `<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#eef0f3"/>
+            <text x="${L-9}" y="${yy+4}" text-anchor="end" font-size="11" fill="#9aa1ae">${num1(v/1e6)} млн</text>`;
+  }).join("");
+  let bars = "", xs = "";
+  labels.forEach((t, i) => {
+    const cx = L + slot * i + slot/2;
+    const h1 = H - B - y(plan[i]), h2 = H - B - y(fact[i]);
+    bars += `<rect x="${cx-bw-2}" y="${y(plan[i])}" width="${bw}" height="${h1}" rx="3" fill="#c6cff2"/>
+             <rect x="${cx+2}" y="${y(fact[i])}" width="${bw}" height="${h2}" rx="3" fill="#4b63d8"/>`;
+    xs += `<text x="${cx}" y="${H-12}" text-anchor="middle" font-size="11.5" fill="#7b8290">${t}</text>`;
+  });
+  return { svg: `<svg viewBox="0 0 ${W} ${H}" width="100%">${grid}${bars}${xs}</svg>`,
+    legend: `<div class="muted" style="font-size:12px;padding:2px 16px 0">
+      <span style="display:inline-block;width:9px;height:9px;background:#c6cff2;border-radius:2px;margin-right:5px"></span>план
+      <span style="display:inline-block;width:9px;height:9px;background:#4b63d8;border-radius:2px;margin:0 5px 0 14px"></span>факт</div>` };
+}
+
+/* ---------- вкладка: Обзор ---------- */
+function renderOverview() {
+  const idx = PERIODS[period];
+  const inc = pick(M.dds.income, idx), exp = pick(M.dds.expense, idx);
+  const labels = pick(M.months, idx);
+  const sInc = sum(inc), sExp = sum(exp), diff = sInc - sExp;
+
+  let html = `<div class="kpis">
+    <div class="card kpi"><div class="t">Поступления <span class="muted">с НДС</span></div>
+      <div class="v num">${fmtM(sInc)}</div><div class="d">за период</div></div>
+    <div class="card kpi"><div class="t">Списания <span class="muted">с НДС</span></div>
+      <div class="v num">${fmtM(sExp)}</div><div class="d">за период</div></div>
+    <div class="card kpi"><div class="t">Кассовый результат</div>
+      <div class="v num ${diff >= 0 ? "up" : "down"}">${diff >= 0 ? "+" : "−"}${fmtM(Math.abs(diff))}</div>
+      <div class="d">поступления − списания</div></div>
+    <div class="card kpi"><div class="t">Остаток на счёте</div>
+      <div class="v num">${fmtM(M.dds.balance)}</div><div class="d">текущий, вне периода</div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card"><h2>Динамика по месяцам</h2>
+      <div class="hint">${partialNote(idx)}</div>
+      <div class="pad">${lineChart([
+        {values: inc, color: "#0f9d58"}, {values: exp, color: "#d93025"}
+      ], labels)}</div></div>
+    <div class="card"><h2>Структура расходов</h2>
+      <div class="hint">Янв – Сен 2026 · ${fmtM(sum(exp))} всего</div>
+      <div class="pad bars">${M.expense_by_article.map((a, i) => {
+        const w = a.amount / M.expense_by_article[0].amount * 100;
+        return `<div class="bar"><div>${a.article}</div>
+          <div class="track"><div class="fill ${i > 2 ? "g" : ""}" style="width:${w.toFixed(1)}%"></div></div>
+          <div class="val num">${fmtM(a.amount)}</div></div>`;
+      }).join("")}</div></div>
+  </div>
+
+  <div class="card"><h2>Последние операции</h2>
+    <div class="hint">синтетические данные для макета</div>
+    <div class="pad"><table>
+      <thead><tr><th>Дата</th><th>Статья</th><th>Контрагент</th><th>Тип</th><th class="r">Сумма</th></tr></thead>
+      <tbody>${M.operations.map(o => `<tr>
+        <td class="num">${o.date.split("-").reverse().join(".")}</td><td>${o.article}</td>
+        <td>${o.counterparty}</td>
+        <td><span class="pill ${o.direction === "поступление" ? "in" : "out"}">${o.direction}</span></td>
+        <td class="r num">${fmtM(o.amount)}</td></tr>`).join("")}</tbody>
+    </table></div></div>`;
+  document.getElementById("pane-overview").innerHTML = html;
+}
+
+/* ---------- вкладка: Маркетинг ---------- */
+function renderMarketing() {
+  const idx = PERIODS[period];
+  const labels = pick(M.months, idx);
+  const plan = M.marketing.channels[0].plan.map((_, i) => sum(M.marketing.channels.map(c => c.plan[i])));
+  const fact = M.marketing.channels[0].plan.map((_, i) => sum(M.marketing.channels.map(c => c.fact[i])));
+  const p = pick(plan, idx), f = pick(fact, idx);
+  const sP = sum(p), sF = sum(f), osvoenie = sF / sP * 100;
+  const dev = pct(sF, sP);
+
+  const rows = M.marketing.channels.map(c => {
+    const cp = sum(pick(c.plan, idx)), cf = sum(pick(c.fact, idx));
+    const d = pct(cf, cp);
+    return `<tr><td>${c.channel}</td><td class="r num">${fmtM(cp)}</td><td class="r num">${fmtM(cf)}</td>
+      <td class="r num ${d <= 0 ? "up" : "down"}">${fmtPct(d)}</td>
+      <td class="r num">${Math.round(cf / cp * 100)}%</td></tr>`;
+  }).join("");
+  const totP = sum(M.marketing.channels.map(c => sum(pick(c.plan, idx))));
+  const totF = sum(M.marketing.channels.map(c => sum(pick(c.fact, idx))));
+
+  document.getElementById("pane-marketing").innerHTML = `
+  <div class="kpis">
+    <div class="card kpi"><div class="t">План <span class="muted">с НДС</span></div>
+      <div class="v num">${fmtM(sP)}</div><div class="d">за период</div></div>
+    <div class="card kpi"><div class="t">Факт <span class="muted">с НДС</span></div>
+      <div class="v num">${fmtM(sF)}</div><div class="d">за период</div></div>
+    <div class="card kpi"><div class="t">Освоение бюджета</div>
+      <div class="v num ${osvoenie > 105 ? "down" : ""}">${num1(osvoenie)}%</div>
+      <div class="d">факт / план</div></div>
+    <div class="card kpi"><div class="t">Отклонение</div>
+      <div class="v num ${dev <= 0 ? "up" : "down"}">${fmtPct(dev)}</div>
+      <div class="d">${dev <= 0 ? "экономия к плану" : "перерасход к плану"}</div></div>
+  </div>
+  <div class="card"><h2>План и факт по месяцам</h2>
+    <div class="hint">${partialNote(idx)}</div>
+    ${groupBars(p, f, labels).legend}
+    <div class="pad">${groupBars(p, f, labels).svg}</div></div>
+  <div class="card" style="margin-top:16px"><h2>По каналам</h2>
+    <div class="hint">Янв – Сен 2026 · отклонение = факт − план</div>
+    <div class="pad"><table>
+      <thead><tr><th>Канал</th><th class="r">План</th><th class="r">Факт</th><th class="r">Отклонение</th><th class="r">Освоение</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr><td>Итого</td><td class="r num">${fmtM(totP)}</td><td class="r num">${fmtM(totF)}</td>
+        <td class="r num">${fmtPct(pct(totF, totP))}</td>
+        <td class="r num">${Math.round(totF / totP * 100)}%</td></tr></tfoot>
+    </table></div></div>`;
+}
+
+/* ---------- вкладка: Продажи ---------- */
+function renderSales() {
+  const f = M.funnel, top = f[0].count;
+  const conv = (a, b) => (b / a * 100).toFixed(0) + "%";
+  const paid = f[f.length - 1].count;
+  const deals = sum(M.directions.map(d => d.deals));
+  const rev = sum(M.directions.map(d => d.revenue));
+  const rows = M.directions.map(d => `<tr><td>${d.name}</td><td class="r num">${fmtM(d.revenue)}</td>
+      <td class="r num">${d.deals}</td><td class="r num">${fmtM(d.avg_check)}</td>
+      <td class="r num">${(d.conversion * 100).toFixed(0)}%</td></tr>`).join("");
+
+  document.getElementById("pane-sales").innerHTML = `
+  <div class="kpis">
+    <div class="card kpi"><div class="t">Выручка начисленная <span class="muted">без НДС</span></div>
+      <div class="v num">${fmtM(rev)}</div><div class="d">янв – сен 2026</div></div>
+    <div class="card kpi"><div class="t">Оплаченных сделок</div>
+      <div class="v num">${paid}</div><div class="d">из ${f[0].count} лидов</div></div>
+    <div class="card kpi"><div class="t">Конверсия в оплату</div>
+      <div class="v num">${conv(top, paid)}</div><div class="d">лид → оплата</div></div>
+    <div class="card kpi"><div class="t">Средний чек</div>
+      <div class="v num">${fmtM(rev / deals)}</div><div class="d">по ${deals} сделкам</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h2>Воронка продаж</h2>
+      <div class="hint">Битрикс24 · янв – сен 2026</div>
+      <div class="pad funnel">${f.map((s, i) => {
+        const w = s.count / top * 100;
+        const convRow = i ? `<div class="conv"><div></div><div class="arrow">↑ ${conv(f[i-1].count, s.count)}</div></div>` : "";
+        return `${convRow}<div class="frow"><div class="stage"><b class="num">${fmtN(s.count)}</b><br><span class="muted">${s.stage}</span></div>
+          <div class="track"><div class="fill" style="width:${w.toFixed(1)}%">${w >= 25 ? fmtN(s.count) : ""}</div></div></div>`;
+      }).join("")}</div></div>
+    <div class="card"><h2>По направлениям</h2>
+      <div class="hint">выручка без НДС</div>
+      <div class="pad"><table>
+        <thead><tr><th>Направление</th><th class="r">Выручка</th><th class="r">Сделки</th><th class="r">Ср. чек</th><th class="r">Конв.</th></tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr><td>Итого</td><td class="r num">${fmtM(rev)}</td><td class="r num">${deals}</td>
+          <td class="r num">${fmtM(rev / deals)}</td><td class="r num">${conv(top, paid)}</td></tr></tfoot>
+      </table></div></div>
+  </div>`;
+}
+
+/* ---------- вкладка: Метрики ---------- */
+function renderMetrics() {
+  const cards = M.metrics.map(m => {
+    const isPct = m.unit === "%";
+    const val = isPct ? Math.round(m.value * 100) + "%"
+      : (m.unit === "×" ? m.value.toString().replace(".", ",") + "×" : fmtM(m.value));
+    const norm = isPct ? Math.round(m.norm * 100) + "%"
+      : (m.unit === "×" ? m.norm.toString().replace(".", ",") + "×" : fmtM(m.norm));
+    const d = pct(m.value, m.norm);
+    const ok = m.good_is_higher ? d >= 0 : d <= 0;
+    return `<div class="card mcard">
+      <div class="top"><div><div class="name">${m.name}</div><div class="form">${m.formula}</div></div>
+        <div class="dev ${ok ? "ok" : "no"}">${fmtPct(d)} к норме</div></div>
+      <div class="big num">${val}</div>
+      <div class="norm">Норматив: <b>${norm}</b> · без НДС</div></div>`;
+  }).join("");
+
+  document.getElementById("pane-metrics").innerHTML = `
+  <div class="mgrid">${cards}</div>
+  <div class="note">Поступления, которые тянутся из сервиса учёта, включают НДС 22% — <b>на этой вкладке все показатели считаются без НДС</b>.
+  Нормативы задаются в Настройках (появятся в каркасе). Период: Янв – Сен 2026.</div>`;
+}
+
+/* ---------- переключение вкладок и периода ---------- */
+const TITLES = {
+  overview: ["Обзор", "Маркетинговая группа «Вектор» · данные: синтетика"],
+  marketing: ["Маркетинг", "бюджет: план из Google-таблицы, факт из Excel-ведомости"],
+  sales: ["Продажи", "воронка и сделки из CRM"],
+  metrics: ["Метрики", "расчётные показатели · факт vs норматив"],
+  settings: ["Настройки", "ключи API, ссылки на таблицы, нормативы — появятся в каркасе"],
+};
+function show(tab) {
+  if (!document.getElementById("pane-" + tab)) tab = "overview";
+  ["overview", "marketing", "sales", "metrics"].forEach(t => {
+    document.getElementById("pane-" + t).hidden = t !== tab;
+  });
+  document.querySelectorAll("#nav a").forEach(a => a.classList.toggle("on", a.dataset.tab === tab));
+  document.getElementById("title").textContent = TITLES[tab][0];
+  document.getElementById("subtitle").textContent = TITLES[tab][1];
+}
+function renderAll() { renderOverview(); renderMarketing(); renderSales(); renderMetrics(); }
+
+document.getElementById("period").addEventListener("change", e => {
+  period = e.target.value; renderOverview(); renderMarketing();
+});
+window.addEventListener("hashchange", () => show(location.hash.slice(1)));
+renderAll();
+show(location.hash.slice(1) || "overview");
+</script>
+</body>
+</html>

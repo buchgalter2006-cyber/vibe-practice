@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Сервис отчётности «Вектор» · тестовые данные</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand">
+      <div class="dot"></div>
+      <div><b>Вектор</b><span>сервис отчётности</span></div>
+    </div>
+    <nav class="nav" id="nav">
+      <a href="#overview" data-tab="overview"><span class="i">▦</span>Обзор</a>
+      <a href="#marketing" data-tab="marketing"><span class="i">◎</span>Маркетинг</a>
+      <a href="#sales" data-tab="sales"><span class="i">◔</span>Продажи</a>
+      <a href="#metrics" data-tab="metrics"><span class="i">◈</span>Метрики</a>
+      <div class="sep">Система</div>
+      <a href="#settings" data-tab="settings" class="off"><span class="i">⚙</span>Настройки</a>
+    </nav>
+    <div class="foot">Каркас · Ф3<br>Источники: Google-таблица · Excel · FinTablo · Битрикс24<br><span class="muted">(подключаются в Ф4)</span></div>
+  </aside>
+
+  <main>
+    <div class="toast" id="net-status" hidden><span class="sp"></span><span id="net-status-text">Загрузка…</span></div>
+    <header>
+      <div>
+        <h1 id="title">Обзор</h1>
+        <div class="sub" id="subtitle">Маркетинговая группа «Вектор» · данные: синтетика</div>
+      </div>
+      <div class="filters">
+        <select id="period">
+          <option value="all" selected>Янв – Сен 2026</option>
+          <option value="q3">Q3 2026</option>
+          <option value="sep">Сентябрь 2026</option>
+        </select>
+        <select disabled title="Появится в каркасе (Ф3)"><option>Все направления</option></select>
+      </div>
+    </header>
+
+    <section id="pane-overview"></section>
+    <section id="pane-marketing" hidden></section>
+    <section id="pane-sales" hidden></section>
+    <section id="pane-metrics" hidden></section>
+    <section id="pane-settings" hidden></section>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
