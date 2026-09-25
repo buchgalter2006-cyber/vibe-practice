@@ -40,15 +40,6 @@ class DataSource:
         raise NotImplementedError
 
 
-class GoogleSheetsSource(DataSource):
-    """План маркетинга из Google-таблицы."""
-    name = "google_sheets"
-    title = u"Google Sheets"
-
-    def fetch(self, period: str) -> Dict[str, Any]:
-        # TODO Ф4: gviz/Sheets API по GOOGLE_SHEET_URL + сервисный аккаунт
-        raise NotImplementedError("google_sheets: подключение в Ф4")
-
 
 class ExcelFileSource(DataSource):
     """Факт маркетинга из Excel-ведомости — реализован, см. excel_source.py."""
@@ -60,24 +51,6 @@ class ExcelFileSource(DataSource):
         return ExcelSource().fetch(period)
 
 
-class FintabloApiSource(DataSource):
-    """ДДС/остатки из FinTablo API."""
-    name = "fintablo_api"
-    title = u"FinTablo API"
-
-    def fetch(self, period: str) -> Dict[str, Any]:
-        # TODO Ф4: REST-выгрузка по FINTABLO_TOKEN (токен не логировать)
-        raise NotImplementedError("fintablo_api: подключение в Ф4")
-
-
-class BitrixWebhookSource(DataSource):
-    """Воронка и сделки из Битрикс24 (вебхук)."""
-    name = "bitrix_webhook"
-    title = u"Битрикс24 (вебхук)"
-
-    def fetch(self, period: str) -> Dict[str, Any]:
-        # TODO Ф4: crm.deal.list по BITRIX_WEBHOOK_URL
-        raise NotImplementedError("bitrix_webhook: подключение в Ф4")
 
 
 def get_source(name: Optional[str] = None) -> DataSource:
@@ -92,13 +65,13 @@ def get_source(name: Optional[str] = None) -> DataSource:
     if key == "google_sheets":
         from .google_source import GoogleSheetsSource
         return GoogleSheetsSource()
-    stubs = {
-        "fintablo_api": FintabloApiSource,
-        "bitrix_webhook": BitrixWebhookSource,
-    }
-    if key in stubs:
-        return stubs[key]()
-    raise SourceError(u"неизвестный DATA_SOURCE: %s (доступно: mock, excel_file, google_sheets)" % key)
+    if key == "fintablo_api":
+        from .fintablo_source import FintabloSource
+        return FintabloSource()
+    if key == "bitrix_webhook":
+        from .bitrix_source import BitrixSource
+        return BitrixSource()
+    raise SourceError(u"неизвестный DATA_SOURCE: %s (доступно: mock, excel_file, google_sheets, fintablo_api, bitrix_webhook)" % key)
 
 
 def available_sources() -> List[Dict[str, Any]]:
@@ -107,6 +80,6 @@ def available_sources() -> List[Dict[str, Any]]:
         {"name": "mock", "title": u"Тестовый датасет (mock)", "ready": True},
         {"name": "excel_file", "title": u"Excel-файл (факт маркетинга)", "ready": True},
         {"name": "google_sheets", "title": u"Google Sheets (план маркетинга)", "ready": True},
-        {"name": "fintablo_api", "title": u"FinTablo API", "ready": False},
-        {"name": "bitrix_webhook", "title": u"Битрикс24 (вебхук)", "ready": False},
+        {"name": "fintablo_api", "title": u"FinTablo API (ДДС)", "ready": True},
+        {"name": "bitrix_webhook", "title": u"Битрикс24 (воронка и сделки)", "ready": True},
     ]
