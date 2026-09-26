@@ -1,0 +1,40 @@
+{
+  "type": "object",
+  "required": ["action"],
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": ["expense", "correct", "ignore"]
+    },
+    "comment": { "type": "string" },
+    "transactions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["amount", "status", "article", "type"],
+        "properties": {
+          "date": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "amount": { "type": ["number", "null"] },
+          "currency": { "type": "string", "enum": ["₽"] },
+          "vendor": { "type": "string" },
+          "article": {
+            "type": "string",
+            "enum": ["ФОТ", "Реклама", "Подрядчики", "Аренда и офис",
+                     "ПО и сервисы", "Налоги", "Прочее"]
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": ["карта", "наличные", "перевод", "неизвестно"]
+          },
+          "type": { "type": "string", "enum": ["расход", "доход"] },
+          "status": { "type": "string", "enum": ["готово", "требует проверки"] },
+          "comment": { "type": "string" }
+        }
+      }
+    },
+    "fields": {
+      "type": "object",
+      "description": "Для action=correct: поля последней записи, которые меняем"
+    }
+  }
+}
